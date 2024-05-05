@@ -1,6 +1,6 @@
 # Makefile
 
-.PHONY: all install clean clean-purge
+.PHONY: all install clean clean-cache
 
 all: install postinstall
 

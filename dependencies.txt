@@ -1,0 +1,7 @@
+[required]
+libreoffice-common
+coreutils
+graphicsmagick-imagemagick-compat
+
+[optional]
+yaru-theme-icon
