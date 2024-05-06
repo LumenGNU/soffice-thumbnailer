@@ -1,10 +1,15 @@
 #!/bin/bash
 
-intermediateFilePath="/$(basename "${1%.*}".png)"
+out_png="${2}"
+
+intermediateFile_2png="/$(basename "${1%.*}".png)"
 fileType="${1##*.}"
 
-export HOME=/tmp
-mkdir -p /tmp/.config/libreoffice 
+iconsSet='/usr/share/icons/Yaru'
+opacity='0.65'
+geometry='+3+8'
+gravity='SouthEast'
+
 if ! timeout 5s soffice  --headless \
          --invisible \
          --nocrashreport \
@@ -12,64 +17,60 @@ if ! timeout 5s soffice  --headless \
          --nofirststartwizard \
          --nologo \
          --norestore \
-         -env:UserInstallation=file:///.config \
-         -env:HOME=/tmp \
-         -env:TEMP=/tmp \
-         -env:TMP=/tmp \
-         -env:TMPDIR=/tmp \
-         -env:XDG_CACHE_HOME=/tmp \
-         -env:XDG_CONFIG_HOME=/tmp \
-         -env:XDG_CURRENT_DESKTOP=/tmp \
+         -env:UserInstallation=file:///temp \
          --convert-to png "${1}"
 then
     exit 1
 fi
 
-convert "${intermediateFilePath}" -thumbnail "${3}x${3}" "png:${2}"
+
+convert "${intermediateFile_2png}" -thumbnail "${3}x${3}" "png:${2}"
+
+iconize() {
+    convert "${iconsSet}/32x32@2x/mimetypes/${1}" -alpha on -channel A -evaluate multiply "${opacity}" +channel png:- | composite -gravity $gravity -geometry $geometry - "${out_png}" "${out_png}"
+}
 
 
-if [[ -d "/usr/share/icons/Yaru/" ]]
+if [[ -d "${iconsSet}" ]]
 then
     case "${fileType}" in
      odt)
-        convert /usr/share/icons/Yaru/32x32@2x/mimetypes/application-vnd.oasis.opendocument.text.png  -alpha on -channel A -evaluate multiply 0.5 +channel /tmp_icon.png
+        iconize 'application-vnd.oasis.opendocument.text.png'
         ;;
     ods)
-        convert /usr/share/icons/Yaru/32x32@2x/mimetypes/application-vnd.oasis.opendocument.spreadsheet.png  -alpha on -channel A -evaluate multiply 0.5 +channel /tmp_icon.png
+        iconize 'application-vnd.oasis.opendocument.spreadsheet.png'
         ;;
     odp)
-        convert /usr/share/icons/Yaru/32x32@2x/mimetypes/application-vnd.oasis.opendocument.presentation.png  -alpha on -channel A -evaluate multiply 0.5 +channel /tmp_icon.png
+        iconize 'application-vnd.oasis.opendocument.presentation.png'
         ;;
     odg)
-        convert /usr/share/icons/Yaru/32x32@2x/mimetypes/application-vnd.oasis.opendocument.graphics.png  -alpha on -channel A -evaluate multiply 0.5 +channel /tmp_icon.png
+        iconize 'application-vnd.oasis.opendocument.graphics.png'
         ;;
     doc)
-        convert /usr/share/icons/Yaru/32x32@2x/mimetypes/application-vnd.ms-word.png  -alpha on -channel A -evaluate multiply 0.5 +channel /tmp_icon.png
+        iconize 'application-vnd.ms-word.png'
         ;;
     docx)
-        convert /usr/share/icons/Yaru/32x32@2x/mimetypes/application-vnd.openxmlformats-officedocument.wordprocessingml.document.png -alpha on -channel A -evaluate multiply 0.5 +channel /tmp_icon.png
+        iconize 'application-vnd.openxmlformats-officedocument.wordprocessingml.document.png'
         ;;
     xls)
-        convert /usr/share/icons/Yaru/32x32@2x/mimetypes/application-vnd.ms-excel.png  -alpha on -channel A -evaluate multiply 0.5 +channel /tmp_icon.png
+        iconize 'application-vnd.ms-excel.png'
         ;;
     xlsx)
-        convert /usr/share/icons/Yaru/32x32@2x/mimetypes/application-vnd.openxmlformats-officedocument.spreadsheetml.sheet.png  -alpha on -channel A -evaluate multiply 0.5 +channel /tmp_icon.png
+        iconize 'application-vnd.openxmlformats-officedocument.spreadsheetml.sheet.png'
         ;;
     ppt)
-        convert /usr/share/icons/Yaru/32x32@2x/mimetypes/application-vnd.ms-powerpoint.png  -alpha on -channel A -evaluate multiply 0.5 +channel /tmp_icon.png
+        iconize 'application-vnd.ms-powerpoint.png'
         ;;
     pptx)
-        convert /usr/share/icons/Yaru/32x32@2x/mimetypes/application-vnd.openxmlformats-officedocument.presentationml.slideshow.png  -alpha on -channel A -evaluate multiply 0.5 +channel /tmp_icon.png
+        iconize 'application-vnd.openxmlformats-officedocument.presentationml.slideshow.png'
         ;;
      *)
-        convert /usr/share/icons/Yaru/32x32@2x/mimetypes/text-document.png  -alpha on -channel A -evaluate multiply 0.5 +channel /tmp_icon.png
+        iconize 'text-document.png'
         ;;
     esac
 
-    composite -gravity SouthEast /tmp_icon.png "${2}" "${2}"
-
 fi
-[[ -f /tmp_icon.png ]] && rm -f /tmp_icon.png
+
 [[ -f "${1}" ]] && rm -f "${1}"
-[[ -f "${intermediateFilePath}" ]] && rm -f "${intermediateFilePath}"
+[[ -f "${intermediateFile_2png}" ]] && rm -f "${intermediateFile_2png}"
 
