@@ -3,26 +3,34 @@
 out_png="${2}"
 
 intermediateFile_2png="/$(basename "${1%.*}".png)"
-fileType="${1##*.}"
+fileExt="${1##*.}"
 
+# config
 iconsSet='/usr/share/icons/Yaru'
 opacity='0.65'
 geometry='+3+8'
 gravity='SouthEast'
 
-if ! timeout 5s soffice  --headless \
-         --invisible \
-         --nocrashreport \
-         --nodefault \
-         --nofirststartwizard \
-         --nologo \
-         --norestore \
-         -env:UserInstallation=file:///temp \
-         --convert-to png "${1}"
-then
-    exit 1
-fi
 
+case "${fileExt}" in
+  "odt" | "ods" | "odp" | "odg" | "doc" | "docx" | "xls" | "xlsx" | "ppt" | "pptx" | "rtf" | "txt")
+    if ! timeout 5s soffice  --headless \
+            --invisible \
+            --nocrashreport \
+            --nodefault \
+            --nofirststartwizard \
+            --nologo \
+            --norestore \
+            -env:UserInstallation=file:///temp \
+            --convert-to png "${1}"
+    then
+        exit 1
+    fi
+    ;;
+  *)
+    exit 1
+    ;;
+esac
 
 convert "${intermediateFile_2png}" -thumbnail "${3}x${3}" "png:${2}"
 
@@ -33,7 +41,7 @@ iconize() {
 
 if [[ -d "${iconsSet}" ]]
 then
-    case "${fileType}" in
+    case "${fileExt}" in
      odt)
         iconize 'application-vnd.oasis.opendocument.text.png'
         ;;
@@ -64,8 +72,11 @@ then
     pptx)
         iconize 'application-vnd.openxmlformats-officedocument.presentationml.slideshow.png'
         ;;
-     *)
+    txt)
         iconize 'text-document.png'
+        ;;
+    *)
+        :
         ;;
     esac
 
