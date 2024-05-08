@@ -1,28 +1,48 @@
 #!/bin/bash
 
-out_png="${2}"
+declare -r in_doc="${1}"
+declare -r out_png="${2}"
 
-intermediateFile_2png="/$(basename "${1%.*}".png)"
-fileExt="${1##*.}"
+declare -r intermediateFile_2png="/$(basename "${1%.*}".png)"
+declare -r fileExt="${1##*.}"
 
-size="${3}x${3}"
+declare -r size="${3}x${3}"
+
+declare -A colors
+colors["odt"]='#328ABD'
+colors["ods"]='#4EA33F'
+colors["odp"]='#C16A3C'
+colors["odg"]='#D98E49'
+colors["doc"]='#6597DF'
+colors["docx"]='#407DD4'
+colors["docm"]='#407DD4'
+colors["xls"]='#3BA67A'
+colors["xlsx"]='#19895A'
+colors["xlsm"]='#19895A'
+colors["ppt"]='#EE7A5D'
+colors["pptx"]='#D95A3B'
+colors["rtf"]='#F04D45'
+colors["txt"]='#F19B36'
+colors["fodt"]='#3BC5F4'
+colors["fods"]='#76A052'
+colors["csv"]='#A7D183'
 
 case "${fileExt,,}" in
-  "odt" | "ods" | "odp" | "odg" | "doc" | "docx" | "xls" | "xlsx" | "ppt" | "pptx" | "rtf" | "txt" | "fodt")
-    if ! timeout 5s soffice  --headless \
-            --invisible \
-            --nocrashreport \
-            --nodefault \
-            --nofirststartwizard \
-            --nologo \
-            --norestore \
-            -env:UserInstallation=file:///temp \
-            --convert-to png "${1}"
-    then
-        exit 1
-    fi
+    odt | ods | odp | odg | doc | docx | docm | xls | xlsx | xlsm | ppt | pptx | rtf | txt | fodt | csv | fods )
+        if ! timeout 5s soffice  --headless \
+                --invisible \
+                --nocrashreport \
+                --nodefault \
+                --nofirststartwizard \
+                --nologo \
+                --norestore \
+                -env:UserInstallation=file:///temp \
+                --convert-to png "${in_doc}"
+        then
+            exit 1
+        fi
     ;;
-  *)
+    *)
     exit 1
     ;;
 esac
@@ -31,64 +51,15 @@ esac
 
 # @fixme: не происходит наложение иконки для документов на гугл-диске
 
-iconize() {
-    color="${1}"
-    ext="${2}"
 
-    convert "${intermediateFile_2png}" -thumbnail "${size}" \
-        \( +clone -fill "${color}" -draw "polygon 0,0 103,0 0,64" \) \
-        \( +clone -fill "rgba(0,0,0,0.2)" -draw "polygon 0,0 106,0 0,69" \) \
-        -background none -layers merge +repage \
-        -gravity northwest -pointsize 16 -fill white -annotate +10+10 "${ext}" \
-        "png:${out_png}"
-}
+convert "${intermediateFile_2png}" -thumbnail "${size}" \
+    \( +clone -fill "${colors[${fileExt,,}]}" -draw "polygon 0,0 103,0 0,64" \) \
+    \( +clone -fill "rgba(0,0,0,0.2)" -draw "polygon 0,0 106,0 0,69" \) \
+    -background none -layers merge +repage \
+    -gravity northwest -pointsize 16 -fill white -annotate +10+10 "${fileExt^^}" \
+    "png:${out_png}"
 
 
-
-case "${fileExt,,}" in
-    odt)
-        iconize '#328ABD' 'ODT'
-        ;;
-    ods)
-        iconize '#4EA33F' 'ODS'
-        ;;
-    odp)
-        iconize '#C16A3C' 'ODP'
-        ;;
-    odg)
-        iconize '#D98E49' 'ODG'
-        ;;
-    doc)
-        iconize '#6597DF' 'DOC'
-        ;;
-    docx)
-        iconize '#407DD4' 'DOCX'
-        ;;
-    xls)
-        iconize '#3BA67A' 'XLS'
-        ;;
-    xlsx)
-        iconize '#19895A' 'XSLX'
-        ;;
-    ppt)
-        iconize '#EE7A5D' 'PPT'
-        ;;
-    pptx)
-        iconize '#D95A3B' 'PPTX'
-        ;;
-    txt)
-        iconize '#F19B36' 'TXT'
-        ;;
-    rtf)
-        iconize '#F04D45' 'RTF'
-        ;;
-    fodt)
-        iconize '#3BC5F4' 'FODT'
-        ;;    
-    *)
-        iconize 'cyan'
-        ;;
-esac
 
 
 
