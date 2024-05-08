@@ -7,15 +7,8 @@ fileExt="${1##*.}"
 
 size="${3}x${3}"
 
-# config
-# iconsSet='/usr/share/icons/Yaru'
-# opacity='0.65'
-# geometry='+3+8'
-# gravity='SouthEast'
-
-
-case "${fileExt}" in
-  "odt" | "ods" | "odp" | "odg" | "doc" | "docx" | "xls" | "xlsx" | "ppt" | "pptx" | "rtf" | "txt")
+case "${fileExt,,}" in
+  "odt" | "ods" | "odp" | "odg" | "doc" | "docx" | "xls" | "xlsx" | "ppt" | "pptx" | "rtf" | "txt" | "fodt")
     if ! timeout 5s soffice  --headless \
             --invisible \
             --nocrashreport \
@@ -34,26 +27,25 @@ case "${fileExt}" in
     ;;
 esac
 
-#convert "${intermediateFile_2png}" -thumbnail "${size}" "png:${2}"
+
 
 # @fixme: не происходит наложение иконки для документов на гугл-диске
 
 iconize() {
-    #convert "${iconsSet}/32x32@2x/mimetypes/${1}" -alpha on -channel A -evaluate multiply "${opacity}" +channel png:- | composite -gravity $gravity -geometry $geometry - "${out_png}" "${out_png}"
-
     color="${1}"
     ext="${2}"
 
     convert "${intermediateFile_2png}" -thumbnail "${size}" \
-    \( +clone -alpha transparent -draw "polygon 0,0 103,0 0,64" -fill "${color}" -colorize 100% \) \
-    -background none -layers merge +repage \
-    -gravity northwest -pointsize 16 -fill white -annotate +10+10 "${ext}" \
-    "png:${out_png}"
+        \( +clone -fill "${color}" -draw "polygon 0,0 103,0 0,64" \) \
+        \( +clone -fill "rgba(0,0,0,0.2)" -draw "polygon 0,0 106,0 0,69" \) \
+        -background none -layers merge +repage \
+        -gravity northwest -pointsize 16 -fill white -annotate +10+10 "${ext}" \
+        "png:${out_png}"
 }
 
 
 
-case "${fileExt}" in
+case "${fileExt,,}" in
     odt)
         iconize '#328ABD' 'ODT'
         ;;
@@ -87,8 +79,14 @@ case "${fileExt}" in
     txt)
         iconize '#F19B36' 'TXT'
         ;;
+    rtf)
+        iconize '#F04D45' 'RTF'
+        ;;
+    fodt)
+        iconize '#3BC5F4' 'FODT'
+        ;;    
     *)
-        iconize '#C0C0C0'
+        iconize 'cyan'
         ;;
 esac
 

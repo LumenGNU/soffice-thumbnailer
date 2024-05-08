@@ -1,0 +1,9 @@
+Package: soffice-thumbnailer
+Version: 2.0.0
+Section: utils
+Priority: optional
+Architecture: all
+Depends: libreoffice-common, coreutils, imagemagick
+Replaces: ooo-thumbnailer
+Maintainer: Lumen <lumen.gnu@gmail.com>
+Description: Provides thumbnails for office files in file managers such as Nautilus.
