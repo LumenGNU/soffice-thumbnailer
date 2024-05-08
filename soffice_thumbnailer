@@ -26,6 +26,7 @@ colors["txt"]='#F19B36'
 colors["fodt"]='#3BC5F4'
 colors["fods"]='#76A052'
 colors["csv"]='#A7D183'
+colors["pdf"]='#F05A6C'
 
 case "${fileExt,,}" in
     odt | ods | odp | odg | doc | docx | docm | xls | xlsx | xlsm | ppt | pptx | rtf | txt | fodt | csv | fods )
@@ -42,8 +43,11 @@ case "${fileExt,,}" in
             exit 1
         fi
     ;;
+    pdf )
+        convert -density 300 "${in_doc}[0]" "${intermediateFile_2png}"
+    ;;
     *)
-    exit 1
+        exit 1
     ;;
 esac
 
@@ -59,10 +63,5 @@ convert "${intermediateFile_2png}" -thumbnail "${size}" \
     -gravity northwest -pointsize 16 -fill white -annotate +10+10 "${fileExt^^}" \
     "png:${out_png}"
 
-
-
-
-
-[[ -f "${1}" ]] && rm -f "${1}"
 [[ -f "${intermediateFile_2png}" ]] && rm -f "${intermediateFile_2png}"
 
