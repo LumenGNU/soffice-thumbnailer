@@ -19,17 +19,24 @@ colors["docm"]='#407DD4'
 colors["xls"]='#3BA67A'
 colors["xlsx"]='#19895A'
 colors["xlsm"]='#19895A'
-colors["ppt"]='#EE7A5D'
-colors["pptx"]='#D95A3B'
+colors["ppt"]='#DB5A3C'
+colors["pptx"]='#DB5A3C'
+
+colors["pps"]='#DB5A3C'
+colors["ppsx"]='#DB5A3C'
+colors["pptm"]='#DB5A3C'
+
 colors["rtf"]='#F04D45'
 colors["txt"]='#F19B36'
 colors["fodt"]='#3BC5F4'
 colors["fods"]='#76A052'
+colors["fodg"]='#B351BC'
 colors["csv"]='#A7D183'
 colors["pdf"]='#F05A6C'
+colors["fodp"]='#FFBA80'
 
 case "${fileExt,,}" in
-    odt | ods | odp | odg | doc | docx | docm | xls | xlsx | xlsm | ppt | pptx | rtf | txt | fodt | csv | fods )
+    odt | ods | odp | odg | doc | docx | docm | xls | xlsx | xlsm | ppt | pptx | rtf | txt | fodt | csv | fods | fodg | fodp | pps | ppsx | pptm)
         if ! timeout 5s soffice  --headless \
                 --invisible \
                 --nocrashreport \
@@ -44,7 +51,10 @@ case "${fileExt,,}" in
         fi
     ;;
     pdf )
-        convert -density 300 "${in_doc}[0]" "${intermediateFile_2png}"
+        if ! timeout 5s convert -density 300 "${in_doc}[0]" -background white -flatten "png:${intermediateFile_2png}"
+        then
+            exit 1
+        fi
     ;;
     *)
         exit 1
@@ -55,13 +65,14 @@ esac
 
 # @fixme: не происходит наложение иконки для документов на гугл-диске
 
-
 convert "${intermediateFile_2png}" -thumbnail "${size}" \
-    \( +clone -fill "${colors[${fileExt,,}]}" -draw "polygon 0,0 103,0 0,64" \) \
     \( +clone -fill "rgba(0,0,0,0.2)" -draw "polygon 0,0 106,0 0,69" \) \
-    -background none -layers merge +repage \
+    \( +clone -fill "${colors[${fileExt,,}]}" -draw "polygon 0,0 103,0 0,64"  +repage \) \
+    -background none -layers flatten +repage \
     -gravity northwest -pointsize 16 -fill white -annotate +10+10 "${fileExt^^}" \
     "png:${out_png}"
+
+
 
 [[ -f "${intermediateFile_2png}" ]] && rm -f "${intermediateFile_2png}"
 

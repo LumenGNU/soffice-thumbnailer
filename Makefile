@@ -6,8 +6,9 @@ all: install postinstall
 
 install: /usr/share/thumbnailers/soffice.thumbnailer /usr/local/bin/soffice_thumbnailer
 
-/usr/share/thumbnailers/soffice.thumbnailer: soffice.thumbnailer
-	sudo cp $< $@
+/usr/share/thumbnailers/soffice.thumbnailer: soffice.thumbnailer suport_mime
+	cat soffice.thumbnailer | sudo tee $@ > /dev/null
+	tr '\n' ';' < "suport_mime" | sudo tee -a $@ > /dev/null
 
 /usr/local/bin/soffice_thumbnailer: soffice_thumbnailer
 	sudo cp $< $@
